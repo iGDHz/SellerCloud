@@ -1,6 +1,9 @@
 package com.hz.sellcloud.entity;
 
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -18,6 +21,7 @@ public class Users implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("用户id")
+    @TableId(type = IdType.AUTO)
     private Integer userId;
 
     @ApiModelProperty("用户名")
@@ -28,6 +32,15 @@ public class Users implements Serializable {
 
     @ApiModelProperty("用户权限")
     private Integer userLevel;
+
+    public Users() {
+    }
+
+    public Users(String userName, String userPassword, Integer userLevel) {
+        this.userName = userName;
+        this.userPassword = userPassword;
+        this.userLevel = userLevel;
+    }
 
     public Integer getUserId() {
         return userId;
@@ -45,6 +58,17 @@ public class Users implements Serializable {
     }
     public String getUserPassword() {
         return userPassword;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Users){
+            Users user = (Users) obj;
+            if(this.getUserName() != user.getUserName()
+            || this.userLevel != user.getUserLevel()) return false;
+            return true;
+        }
+        return false;
     }
 
     public void setUserPassword(String userPassword) {

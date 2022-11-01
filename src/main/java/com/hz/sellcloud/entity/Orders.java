@@ -2,6 +2,10 @@ package com.hz.sellcloud.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -19,6 +23,7 @@ public class Orders implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("订单id")
+    @TableId(type = IdType.AUTO)
     private Integer orderId;
 
     @ApiModelProperty("商品id")
@@ -32,6 +37,22 @@ public class Orders implements Serializable {
 
     @ApiModelProperty("实付价格")
     private BigDecimal price;
+
+    @ApiModelProperty("付款时间")
+    private Date date;
+
+    public Orders(){
+
+    }
+
+    public Orders(Integer productId, Integer total, BigDecimal originPrice, BigDecimal price,Date date) {
+        this.productId = productId;
+        this.total = total;
+        this.originPrice = originPrice;
+        this.price = price;
+        this.date = date;
+    }
+
 
     public Integer getOrderId() {
         return orderId;

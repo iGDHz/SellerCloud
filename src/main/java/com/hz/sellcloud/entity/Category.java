@@ -1,6 +1,9 @@
 package com.hz.sellcloud.entity;
 
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -18,6 +21,7 @@ public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("分类id")
+    @TableId(type = IdType.AUTO)
     private Integer categoryId;
 
     @ApiModelProperty("分类名称")

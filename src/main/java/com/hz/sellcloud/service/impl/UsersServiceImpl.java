@@ -1,5 +1,6 @@
 package com.hz.sellcloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hz.sellcloud.entity.Users;
 import com.hz.sellcloud.mapper.UsersMapper;
 import com.hz.sellcloud.service.IUsersService;
@@ -16,5 +17,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements IUsersService {
-
+    public Users getByName(String username){
+        QueryWrapper<Users> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_name",username);
+        return getOne(queryWrapper);
+    }
 }

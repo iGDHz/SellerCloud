@@ -1,10 +1,16 @@
 package com.hz.sellcloud.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.hz.sellcloud.entity.Orders;
+import com.hz.sellcloud.entity.ProductSum;
+import com.hz.sellcloud.entity.Users;
 import com.hz.sellcloud.service.RedisService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import javax.jws.soap.SOAPBinding;
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,17 +36,47 @@ public class RedisServiceImpl implements RedisService {
         this.redisTemplate = redisTemplate;
     }
 
+    public synchronized void Reduce(){
+        setIsReduce(true);
+        //清楚Redis当中的订单缓存
+        LinkedHashMap<Integer, ProductSum> map = new LinkedHashMap<>();
+        String s;
+        while((s = lPop("orders"))!= null){
+            Orders order = JSON.parseObject(s,Orders.class);
+            int id = order.getProductId();
+            if(!map.containsKey(id)){
+                ProductSum productSum = new ProductSum();
+                productSum.setProductId(id);
+                productSum.setProductAmount(order.getPrice());
+                map.put(id,productSum);
+            }else {
+                ProductSum productSum = map.get(order.getProductId());
+                BigDecimal amount = productSum.getProductAmount();
+                BigDecimal sum = amount.add(order.getPrice());
+                productSum.setProductAmount(sum);
+            }
+        }
+        setIsReduce(false);
+    }
+
     public boolean getIsReduce() {
         return isReduce.get();
     }
 
-    public void setIsReduce(AtomicBoolean isReduce) {
-        this.isReduce = isReduce;
+    public void setIsReduce(boolean isReduce) {
+        this.isReduce = new AtomicBoolean(isReduce);
     }
 
     @Override
     public void set(String key, String value, long time) {
         redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
+    }
+
+    public Users getUser(String token){
+        String s =(String) get(token);
+        if(s == null) return null;
+        Users user = JSON.parseObject(s, Users.class);
+        return user;
     }
 
     @Override
@@ -214,5 +250,10 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public Long lRemove(String key, long count, Object value) {
         return redisTemplate.opsForList().remove(key, count, value);
+    }
+
+    @Override
+    public String lPop(String key){
+        return redisTemplate.opsForList().leftPop(key);
     }
 }

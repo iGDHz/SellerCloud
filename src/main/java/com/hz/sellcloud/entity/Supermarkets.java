@@ -1,5 +1,7 @@
 package com.hz.sellcloud.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  * </p>
  *
  * @author hz
- * @since 2022-10-27
+ * @since 2022-10-31
  */
 @ApiModel(value = "Supermarkets对象", description = "")
 public class Supermarkets implements Serializable {
@@ -18,6 +20,7 @@ public class Supermarkets implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("商店id")
+    @TableId(value = "supermark_id", type = IdType.AUTO)
     private Integer supermarkId;
 
     @ApiModelProperty("商店名称")
@@ -27,7 +30,7 @@ public class Supermarkets implements Serializable {
     private String supermarkRegionid;
 
     @ApiModelProperty("超市所属公司id")
-    private Integer supermatkBelonged;
+    private Integer supermarkBelonged;
 
     public Integer getSupermarkId() {
         return supermarkId;
@@ -50,12 +53,12 @@ public class Supermarkets implements Serializable {
     public void setSupermarkRegionid(String supermarkRegionid) {
         this.supermarkRegionid = supermarkRegionid;
     }
-    public Integer getSupermatkBelonged() {
-        return supermatkBelonged;
+    public Integer getsupermarkBelonged() {
+        return supermarkBelonged;
     }
 
-    public void setSupermatkBelonged(Integer supermatkBelonged) {
-        this.supermatkBelonged = supermatkBelonged;
+    public void setsupermarkBelonged(Integer supermarkBelonged) {
+        this.supermarkBelonged = supermarkBelonged;
     }
 
     @Override
@@ -64,7 +67,7 @@ public class Supermarkets implements Serializable {
             "supermarkId=" + supermarkId +
             ", supermarkName=" + supermarkName +
             ", supermarkRegionid=" + supermarkRegionid +
-            ", supermatkBelonged=" + supermatkBelonged +
+            ", supermarkBelonged=" + supermarkBelonged +
         "}";
     }
 }

@@ -44,6 +44,13 @@ public class RedisInitalizer {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    StringRedisTemplate redisTemplate;
+
+    @Bean("redisService")
+    public RedisServiceImpl RedisService(){
+        return new RedisServiceImpl(redisTemplate);
+    }
 
     @Bean("redisServices")
     public RedisServiceImpl[] RedisConnections(){

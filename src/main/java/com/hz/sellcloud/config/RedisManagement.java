@@ -1,8 +1,10 @@
 package com.hz.sellcloud.config;
 
 import com.hz.sellcloud.service.impl.RedisServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +16,7 @@ public class RedisManagement {
 
     @Value("${redisManagement.dbnum}")
     private int maxnum;
+
 
     volatile AtomicInteger curRedis = new AtomicInteger(0);
 
