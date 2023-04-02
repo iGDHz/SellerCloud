@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2022-10-27
  */
 public interface CompaniesMapper extends BaseMapper<Companies> {
-
+    String getCompanyMail(int id);
 }

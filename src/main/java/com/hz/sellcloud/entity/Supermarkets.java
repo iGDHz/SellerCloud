@@ -3,6 +3,8 @@ package com.hz.sellcloud.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import io.lettuce.core.StrAlgoArgs;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -29,8 +31,25 @@ public class Supermarkets implements Serializable {
     @ApiModelProperty("商店位置id")
     private String supermarkRegionid;
 
+    @ApiModelProperty("超市详细地址")
+    private String supermarkDetail;
+
     @ApiModelProperty("超市所属公司id")
     private Integer supermarkBelonged;
+
+    @ApiModelProperty("超市证件信息文件名")
+    private String supermarkLicense;
+
+    @ApiModelProperty("超市状态")
+    private Byte supermarkState;
+
+    public String getSupermarkDetail() {
+        return supermarkDetail;
+    }
+
+    public void setSupermarkDetail(String supermarkDetail) {
+        this.supermarkDetail = supermarkDetail;
+    }
 
     public Integer getSupermarkId() {
         return supermarkId;
@@ -53,21 +72,42 @@ public class Supermarkets implements Serializable {
     public void setSupermarkRegionid(String supermarkRegionid) {
         this.supermarkRegionid = supermarkRegionid;
     }
-    public Integer getsupermarkBelonged() {
+
+
+    public Integer getSupermarkBelonged() {
         return supermarkBelonged;
     }
 
-    public void setsupermarkBelonged(Integer supermarkBelonged) {
+    public void setSupermarkBelonged(Integer supermarkBelonged) {
         this.supermarkBelonged = supermarkBelonged;
+    }
+
+    public String getSupermarkLicense() {
+        return supermarkLicense;
+    }
+
+    public void setSupermarkLicense(String supermarkLicense) {
+        this.supermarkLicense = supermarkLicense;
+    }
+
+    public Byte getSupermarkState() {
+        return supermarkState;
+    }
+
+    public void setSupermarkState(Byte supermarkState) {
+        this.supermarkState = supermarkState;
     }
 
     @Override
     public String toString() {
         return "Supermarkets{" +
-            "supermarkId=" + supermarkId +
-            ", supermarkName=" + supermarkName +
-            ", supermarkRegionid=" + supermarkRegionid +
-            ", supermarkBelonged=" + supermarkBelonged +
-        "}";
+                "supermarkId=" + supermarkId +
+                ", supermarkName='" + supermarkName + '\'' +
+                ", supermarkRegionid='" + supermarkRegionid + '\'' +
+                ", supermarkDeatil='" + supermarkDetail + '\'' +
+                ", supermarkBelonged=" + supermarkBelonged +
+                ", supermarkLicense='" + supermarkLicense + '\'' +
+                ", supermarkState=" + supermarkState +
+                '}';
     }
 }

@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2022-10-27
  */
 public interface ISupermarketsService extends IService<Supermarkets> {
-
+    boolean updateSupermarketState(int id);
 }

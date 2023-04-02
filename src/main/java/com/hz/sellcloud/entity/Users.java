@@ -1,8 +1,10 @@
 package com.hz.sellcloud.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -15,7 +17,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author hz
  * @since 2022-10-27
  */
-@ApiModel(value = "Users对象", description = "")
+@ApiModel(value = "User对象", description = "")
 public class Users implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -30,20 +32,93 @@ public class Users implements Serializable {
     @ApiModelProperty("用户密码")
     private String userPassword;
 
-    @ApiModelProperty("用户权限")
-    private Integer userLevel;
+    @ApiModelProperty("用户邮箱")
+    private String userMail;
 
+    @ApiModelProperty("用户权限")
+    private String userRole;
+
+    @ApiModelProperty("用户个性签名")
+    private String userIntroduction;
+
+    @ApiModelProperty("用户头像地址")
+    private String userAvatar;
+
+    @ApiModelProperty("用户状态 (0: 等待验证, 1: 已注册)")
+    private Byte userState;
+
+    @TableField(exist = false)
+    private Date createTime;
+
+    @TableField(exist = false)
+    private Date updateTime;
+
+    @TableField(exist = false)
+    private String createBy;
     public Users() {
     }
 
-    public Users(String userName, String userPassword, Integer userLevel) {
+    public Users(Integer userId, String userName, String userPassword, String userRole, String userIntroduction, String userAvatar) {
+        this.userId = userId;
         this.userName = userName;
         this.userPassword = userPassword;
-        this.userLevel = userLevel;
+        this.userRole = userRole;
+        this.userIntroduction = userIntroduction;
+        this.userAvatar = userAvatar;
+    }
+
+    public Users(String userName, String userPassword, String userRole, String userIntroduction, String userAvatar) {
+        this.userName = userName;
+        this.userPassword = userPassword;
+        this.userRole = userRole;
+        this.userIntroduction = userIntroduction;
+        this.userAvatar = userAvatar;
+    }
+
+
+    public String getUserMail() {
+        return userMail;
+    }
+
+    public void setUserMail(String userMail) {
+        this.userMail = userMail;
+    }
+
+    public String getUserIntroduction() {
+        return userIntroduction;
+    }
+
+    public void setUserIntroduction(String userIntroduction) {
+        this.userIntroduction = userIntroduction;
+    }
+
+    public Byte getuserState() {
+        return userState;
+    }
+
+    public void setuserState(Byte userState) {
+        this.userState = userState;
     }
 
     public Integer getUserId() {
         return userId;
+    }
+
+    public String getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
+    }
+
+
+    public String getUserAvatar() {
+        return userAvatar;
+    }
+
+    public void setUserAvatar(String userAvatar) {
+        this.userAvatar = userAvatar;
     }
 
     public void setUserId(Integer userId) {
@@ -60,35 +135,19 @@ public class Users implements Serializable {
         return userPassword;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj instanceof Users){
-            Users user = (Users) obj;
-            if(this.getUserName() != user.getUserName()
-            || this.userLevel != user.getUserLevel()) return false;
-            return true;
-        }
-        return false;
-    }
-
     public void setUserPassword(String userPassword) {
         this.userPassword = userPassword;
-    }
-    public Integer getUserLevel() {
-        return userLevel;
-    }
-
-    public void setUserLevel(Integer userLevel) {
-        this.userLevel = userLevel;
     }
 
     @Override
     public String toString() {
         return "Users{" +
-            "userId=" + userId +
-            ", userName=" + userName +
-            ", userPassword=" + userPassword +
-            ", userLevel=" + userLevel +
-        "}";
+                "userId=" + userId +
+                ", userName='" + userName + '\'' +
+                ", userPassword='" + userPassword + '\'' +
+                ", userRole='" + userRole + '\'' +
+                ", userIntroduction='" + userIntroduction + '\'' +
+                ", userAvatar='" + userAvatar + '\'' +
+                '}';
     }
 }

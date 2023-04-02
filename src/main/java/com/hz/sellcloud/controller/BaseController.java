@@ -5,9 +5,11 @@ import com.hz.sellcloud.service.impl.UsersServiceImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.annotation.Resource;
 
+@Controller
 public class BaseController {
     @Resource(name = "redisService")
     protected RedisServiceImpl redisService;
@@ -16,4 +18,6 @@ public class BaseController {
     protected UsersServiceImpl usersService;
     //log4j2
     protected Logger logger = LogManager.getLogger(BaseController.class);
+
+
 }

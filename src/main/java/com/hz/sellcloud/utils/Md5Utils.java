@@ -28,7 +28,11 @@ public class Md5Utils {
     }
 
     public static String Token(String username, Date date){
-        long time = date.getTime();
-        return md5("sellcloud"+username+time);
+//        long time = date.getTime();
+        return md5("sellcloud"+username);
+    }
+
+    public static String Token(String username){
+        return md5("sellcloud"+username+new Date());
     }
 }

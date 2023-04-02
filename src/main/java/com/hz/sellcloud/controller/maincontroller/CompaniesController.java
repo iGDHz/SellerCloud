@@ -6,6 +6,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hz.sellcloud.controller.BaseController;
+import com.hz.sellcloud.domain.response.CommonResponse;
+import com.hz.sellcloud.domain.vo.company.CompanyListVo;
+import com.hz.sellcloud.domain.vo.company.CompanyVo;
 import com.hz.sellcloud.entity.Companies;
 import com.hz.sellcloud.entity.Users;
 import com.hz.sellcloud.service.RedisService;
@@ -35,12 +38,20 @@ import java.util.List;
  */
 @Controller
 @Api(tags = "公司管理")
-@RequestMapping("/companies")
+@RequestMapping("/company")
 public class CompaniesController extends BaseController {
 
     @Autowired
     CompaniesServiceImpl companiesService;
 
+
+    @RequestMapping(value = "/list",method = RequestMethod.GET)
+    @ApiOperation("获取已注册公司信息")
+    @ResponseBody
+    public CommonResponse ListCompany(){
+        List<CompanyVo> list = companiesService.listCompany();
+        return new CommonResponse(list).sucess();
+    }
 
     @RequestMapping(value = "/sign",method = RequestMethod.POST)
     @ApiOperation("公司信息注册")

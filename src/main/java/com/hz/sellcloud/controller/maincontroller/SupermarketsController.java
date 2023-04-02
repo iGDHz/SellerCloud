@@ -48,31 +48,31 @@ public class SupermarketsController extends BaseController {
                               @RequestParam("companyid") @ApiParam("所属超市id") Integer cid,
                               @RequestParam("token") @ApiParam("用户token") String token){
         JSONObject res = new JSONObject();
-        res.put("status",200);
-        Users user = redisService.getUser(token);
-        if(user == null){
-            res.put("status",403);
-            res.put("msg","请先登录");
-            return res.toJSONString();
-        }
-        Address address = addressService.getAddress(addressid);
-        if(address == null){
-            res.put("status",403);
-            res.put("msg","地址信息异常");
-        }
-        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
-                .eq("supermark_name",sname));
-        if(StringUtils.isEmpty(sname) || supermarket != null){
-            res.put("status",403);
-            res.put("msg","超市已经由其他用户注册或超市名为空");
-            return res.toJSONString();
-        }
-        supermarket = new Supermarkets();
-        supermarket.setSupermarkName(sname);
-        supermarket.setSupermarkRegionid(addressid);
-        supermarket.setsupermarkBelonged(cid);
-        supermarketsService.saveOrUpdate(supermarket);
-        res.put("msg","注册成功，请耐心等待审核通过");
+//        res.put("status",200);
+//        Users user = redisService.getUser(token);
+//        if(user == null){
+//            res.put("status",403);
+//            res.put("msg","请先登录");
+//            return res.toJSONString();
+//        }
+//        Address address = addressService.getAddress(addressid);
+//        if(address == null){
+//            res.put("status",403);
+//            res.put("msg","地址信息异常");
+//        }
+//        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
+//                .eq("supermark_name",sname));
+//        if(StringUtils.isEmpty(sname) || supermarket != null){
+//            res.put("status",403);
+//            res.put("msg","超市已经由其他用户注册或超市名为空");
+//            return res.toJSONString();
+//        }
+//        supermarket = new Supermarkets();
+//        supermarket.setSupermarkName(sname);
+//        supermarket.setSupermarkRegionid(addressid);
+//        supermarket.setsupermarkBelonged(cid);
+//        supermarketsService.saveOrUpdate(supermarket);
+//        res.put("msg","注册成功，请耐心等待审核通过");
         return res.toJSONString();
     }
 
@@ -85,31 +85,31 @@ public class SupermarketsController extends BaseController {
                                 @RequestParam("companyid") @ApiParam("所属超市id") Integer cid,
                                 @RequestParam("token") @ApiParam("用户token") String token){
         JSONObject res = new JSONObject();
-        res.put("status",200);
-        Users user = redisService.getUser(token);
-        if(user == null){
-            res.put("status",403);
-            res.put("msg","请先登录");
-            return res.toJSONString();
-        }
-        Address address = addressService.getAddress(addressid);
-        if(address == null){
-            res.put("status",403);
-            res.put("msg","地址信息异常");
-        }
-        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
-                .eq("supermark_name",sname).ne("supermark_id",sid));
-        if(StringUtils.isEmpty(sname) || supermarket != null){
-            res.put("status",403);
-            res.put("msg","超市已经由其他用户注册或超市名为空");
-            return res.toJSONString();
-        }
-        supermarket.setSupermarkId(sid);
-        supermarket.setSupermarkName(sname);
-        supermarket.setSupermarkRegionid(addressid);
-        supermarket.setsupermarkBelonged(cid);
-        supermarketsService.saveOrUpdate(supermarket);
-        res.put("msg","注册成功，请耐心等待审核通过");
+//        res.put("status",200);
+//        Users user = redisService.getUser(token);
+//        if(user == null){
+//            res.put("status",403);
+//            res.put("msg","请先登录");
+//            return res.toJSONString();
+//        }
+//        Address address = addressService.getAddress(addressid);
+//        if(address == null){
+//            res.put("status",403);
+//            res.put("msg","地址信息异常");
+//        }
+//        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
+//                .eq("supermark_name",sname).ne("supermark_id",sid));
+//        if(StringUtils.isEmpty(sname) || supermarket != null){
+//            res.put("status",403);
+//            res.put("msg","超市已经由其他用户注册或超市名为空");
+//            return res.toJSONString();
+//        }
+//        supermarket.setSupermarkId(sid);
+//        supermarket.setSupermarkName(sname);
+//        supermarket.setSupermarkRegionid(addressid);
+//        supermarket.setsupermarkBelonged(cid);
+//        supermarketsService.saveOrUpdate(supermarket);
+//        res.put("msg","注册成功，请耐心等待审核通过");
         return res.toJSONString();
     }
 
