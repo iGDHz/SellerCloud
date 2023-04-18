@@ -43,6 +43,17 @@ public class Supermarkets implements Serializable {
     @ApiModelProperty("超市状态")
     private Byte supermarkState;
 
+    @ApiModelProperty("创建人")
+    private Integer createBy;
+
+    public Integer getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(Integer createBy) {
+        createBy = createBy;
+    }
+
     public String getSupermarkDetail() {
         return supermarkDetail;
     }

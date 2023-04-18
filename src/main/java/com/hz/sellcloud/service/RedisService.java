@@ -177,4 +177,6 @@ public interface RedisService {
     Long lRemove(String key, long count, Object value);
 
     String lPop(String key);
+
+    String rPop(String key);
 }

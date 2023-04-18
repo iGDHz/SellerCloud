@@ -5,7 +5,7 @@
         <!-- 输出控制台配置 -->
         <Console name="Console" target="SYSTEM_OUT">
             <!-- 控制台只输出debug及以上级别的信息 -->
-            <ThresholdFilter level="debug" />
+            <ThresholdFilter level="info" />
             <!-- 输出日志的格式 -->
             <PatternLayout pattern="%d %-5level %class{36} %L %M - %msg%xEx%n"/>
         </Console>

@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkhelloworld"]=self["webpackChunkhelloworld"]||[]).push([[434],{83434:function(e,r,t){t.r(r),t.d(r,{default:function(){return a}});var u={created(){const{params:e,query:r}=this.$route,{path:t}=e;this.$router.replace({path:"/"+t,query:r})},render:function(e){return e()}};const n=u;var a=n}}]);
+//# sourceMappingURL=434.135ffcb9.js.map

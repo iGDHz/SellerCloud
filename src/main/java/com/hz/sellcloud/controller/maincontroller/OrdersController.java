@@ -1,31 +1,33 @@
 package com.hz.sellcloud.controller.maincontroller;
 
 
+import cn.hutool.core.util.IdUtil;
+import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.hz.sellcloud.config.RedisManagement;
 import com.hz.sellcloud.controller.BaseController;
-import com.hz.sellcloud.entity.Orders;
-import com.hz.sellcloud.entity.Users;
-import com.hz.sellcloud.service.impl.OrdersServiceImpl;
-import com.hz.sellcloud.service.impl.RedisServiceImpl;
+import com.hz.sellcloud.domain.request.order.OrderUpdateRequest;
+import com.hz.sellcloud.domain.response.CommonResponse;
+import com.hz.sellcloud.domain.vo.order.OrderVo;
+import com.hz.sellcloud.entity.*;
+import com.hz.sellcloud.service.ICompaniesService;
+import com.hz.sellcloud.service.IOrderSumService;
+import com.hz.sellcloud.service.IOrdersService;
+import com.hz.sellcloud.service.ISupermarketsService;
+import com.hz.sellcloud.service.impl.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.Tag;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.*;
 import java.math.BigDecimal;
-import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -38,42 +40,114 @@ import java.util.Date;
 
 @Controller
 @Api(tags = "订单管理")
-@RequestMapping("/orders")
+@RequestMapping("/order")
 public class OrdersController extends BaseController {
 
     @Autowired
-    OrdersServiceImpl ordersService;
+    IOrdersService ordersService;
+
+    @Autowired
+    AuthorizationServiceImpl authorizationService;
+
+    @Autowired
+    ISupermarketsService supermarketsService;
+
+    @Autowired
+    ICompaniesService companiesService;
+
+    @Autowired
+    IOrderSumService orderSumService;
+
 
     @Autowired
     RedisManagement redisManagement;
 
-    public boolean isVaild(String token){
-        Users user = redisService.getUser(token);
-        if (user == null) return false;
-        return true;
-    }
-
-    @ApiOperation("提交订单")
     @ResponseBody
-    @RequestMapping(value = "/submitorders",method = RequestMethod.POST)
-    public String SubmitOrder(@RequestParam("token") String token,
-                              @RequestParam("id") @ApiParam("商品id") Integer productid,
-                              @RequestParam("count") @ApiParam("商品总数") Integer productcount,
-                              @RequestParam("oprice") @ApiParam("商品原价") BigDecimal oprice,
-                              @RequestParam("price") @ApiParam("实际支付价格/优惠价") BigDecimal price,
-                              @RequestParam("time") @ApiParam("订单支付时间") Date date){
-        JSONObject res = new JSONObject();
-        res.put("status",200);
-        if(!isVaild(token)){
-            res.put("status",403);
-            res.put("msg","请先登录系统");
+    @ApiOperation("获取订单信息")
+    @RequestMapping(value = "/list",method = RequestMethod.GET)
+    public CommonResponse searchProducts(@RequestParam("token") String token,
+                                         @RequestParam(value = "order_id",required = false) String order_id, //订单号
+                                         @RequestParam(value = "low_price",required = false) BigDecimal low_price,
+                                         @RequestParam(value = "high_price",required = false)BigDecimal high_price,
+                                         @RequestParam(value = "fast_date",required = false) Date fast_date,
+                                         @RequestParam(value = "letast_date",required = false) Date letast_date,
+                                         @RequestParam(value = "page", required = false) Integer page,
+                                         @RequestParam(value = "limit", required = false) Integer pagesize){
+        //1.验证用户token
+        page = page == null?0:page-1;
+        pagesize = pagesize == null?10:pagesize;
+        Users user = TokenToUsers(token);
+        if(user == null){
+            return new CommonResponse().error(403,"token失效");
         }
-        RedisServiceImpl curRedis = redisManagement.getCurRedis();
-        Orders order = new Orders(productid, productcount, oprice, price, date);
-        ordersService.save(order);
-        curRedis.lPush("orders",JSON.toJSONString(order));//将订单存入redis缓存后汇总
-        return  res.toJSONString();
+        //2.查询旗下supermarket
+        List<Supermarkets> list = new ArrayList<>();
+        if(user.getUserRole().equals("Admin")){
+            Companies companies = companiesService.getByUserId(user.getUserId());
+            list = supermarketsService.searchByCompanyId(companies.getCompanyId());
+        }else{
+            list = supermarketsService.searchByUserId(user.getUserId());
+        }
+        List<Integer> sidlist = list.parallelStream().map(item -> item.getSupermarkId()).collect(Collectors.toList());
+        //3.数据库查询
+        List<OrderVo> orderVos = ordersService.searchByConditions(order_id, low_price, high_price, fast_date, letast_date, page, pagesize, sidlist);
+        return new CommonResponse(orderVos).sucess();
     }
 
+    @ResponseBody
+    @ApiOperation("更新订单信息")
+    @RequestMapping(value = "/update",method = RequestMethod.POST)
+    @Transactional
+    public CommonResponse updateOrder(@RequestBody OrderUpdateRequest request){
+        //1.验证用户token
+        Users user = TokenToUsers(request.getToken());
+        if(user == null){
+            return new CommonResponse().error(403,"token失效");
+        }
+        //2.更新订单信息
+        List<OrderVo.productVo> products = request.getOrder().getProducts();
+        OrderSum orderSum = new OrderSum();
+        String uuid = IdUtil.randomUUID();
+        final String orderid = StringUtils.isEmpty(request.getOrder().getOrder_id())?uuid:request.getOrder().getOrder_id();
+        orderSum.setOrderId(orderid);
+        orderSum.setOrderPrice(request.getOrder().getPrice());
+        orderSum.setCreateTime(request.getOrder().getDate());
+        List<Orders> orders = products.parallelStream().map(vo -> {
+            Orders order = new Orders();
+            order.setOrderId(orderid);
+            order.setProductId(vo.getProduct_id());
+            order.setTotal(vo.getQuantity());
+            order.setOriginPrice(vo.getSignle());
+            order.setPrice(vo.getPrice());
+            order.setCreateTime(request.getOrder().getDate());
+            orderSum.setSupermarketId((int) vo.getSupermarket().getSid());
+            return order;
+        }).collect(Collectors.toList());
+        ordersService.deleteByOrderId(request.getOrder().getOrder_id());
+        ordersService.saveOrUpdateBatch(orders);
+        orderSumService.deleteByOrderId(request.getOrder().getOrder_id());
+        orderSumService.saveOrUpdate(orderSum);
+        //TODO 向redis消息队列添加数据
+        List<OrderVo.productVo> productlist = request.getOrder().getProducts();
+        for (OrderVo.productVo productVo : productlist) {
+            redisService.lPush("orderlist",JSON.toJSONString(productVo));
+        }
+        return new CommonResponse().sucess();
+    }
+
+    @ResponseBody
+    @ApiOperation("删除订单")
+    @RequestMapping(value = "/delete",method = RequestMethod.GET)
+    @Transactional
+    public CommonResponse deleteOrder(@RequestParam("token") String token,
+                                      @RequestParam("order_id") String order_id){
+        Users user = TokenToUsers(token);
+        if(user == null){
+            return new CommonResponse().error(403,"token失效");
+        }
+        ordersService.deleteByOrderId(order_id);
+        orderSumService.deleteByOrderId(order_id);
+        return new CommonResponse().sucess();
+    }
 
 }

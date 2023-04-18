@@ -20,4 +20,7 @@ public interface ICompaniesService extends IService<Companies> {
     List<CompanyVo> listCompany();
 
     String GetMail(int id);
+
+    Companies getByUserId(int userId);
+
 }

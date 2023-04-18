@@ -61,7 +61,7 @@ public class CompaniesController extends BaseController {
                               @RequestParam("token") @ApiParam("用户token") String token){
         JSONObject res = new JSONObject();
         res.put("status",200);
-        Users user = redisService.getUser(token);
+        Users user = TokenToUsers(token);
         if(user == null){
             res.put("status",403);
             res.put("msg","请先登录");
@@ -93,7 +93,7 @@ public class CompaniesController extends BaseController {
                               @RequestParam("token") @ApiParam("用户token") String token){
         JSONObject res = new JSONObject();
         res.put("status",200);
-        Users user = redisService.getUser(token);
+        Users user = TokenToUsers(token);
         if(user == null){
             res.put("status",403);
             res.put("msg","请先登录");
@@ -123,7 +123,7 @@ public class CompaniesController extends BaseController {
                                 @RequestParam("token") @ApiParam("用户token") String token){
         JSONObject res = new JSONObject();
         res.put("status",200);
-        Users user = redisService.getUser(token);
+        Users user = TokenToUsers(token);
         if(user == null){
             res.put("status",403);
             res.put("msg","请先登录");
@@ -145,7 +145,7 @@ public class CompaniesController extends BaseController {
     @ApiOperation("公司信息列表查询")
     @ResponseBody
     public String getCompany(@RequestParam("token") @ApiParam("用户token")String token){
-        Users user = redisService.getUser(token);
+        Users user = TokenToUsers(token);
         JSONObject res = new JSONObject();
         res.put("status",200);
         if(user == null){

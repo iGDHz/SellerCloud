@@ -1,16 +1,21 @@
 package com.hz.sellcloud.controller.maincontroller;
 
 
+import cn.hutool.json.JSONUtil;
+import com.alibaba.druid.support.json.JSONUtils;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.hz.sellcloud.controller.BaseController;
 import com.hz.sellcloud.domain.request.user.UserLoginRequest;
 import com.hz.sellcloud.domain.request.user.UserLogoutRequest;
 import com.hz.sellcloud.domain.request.user.UserSignRequest;
+import com.hz.sellcloud.domain.request.user.UserUpdatePasswordRequest;
 import com.hz.sellcloud.domain.response.CommonResponse;
 import com.hz.sellcloud.domain.vo.user.UserInfoVo;
 import com.hz.sellcloud.domain.vo.user.UserLoginVo;
+import com.hz.sellcloud.domain.vo.user.UserMessageVo;
 import com.hz.sellcloud.entity.Authorization;
 import com.hz.sellcloud.entity.Companies;
 import com.hz.sellcloud.entity.Supermarkets;
@@ -52,7 +57,7 @@ import java.io.File;
 @Controller
 @Api(tags = "用户管理")
 @RequestMapping("/user")
-public class UsersController {
+public class UsersController extends BaseController {
 
     @Autowired
     ISupermarketsService supermarketsService;
@@ -67,11 +72,12 @@ public class UsersController {
 
     @Autowired
     FileService fileService;
-    @Resource(name = "redisService")
-    RedisService redisService;
 
     @Autowired
     EmailServiceImpl emailService;
+
+    @Autowired
+    IAddressService addressService;
 
 
     @RequestMapping(value = "/login",method = RequestMethod.POST)
@@ -97,14 +103,13 @@ public class UsersController {
         redisService.set(token,JSON.toJSONString(user),60*60*24);
         UserLoginVo userLoginVo = new UserLoginVo();
         userLoginVo.setToken(token);
-
         //4.将生成的token返回
         return new CommonResponse(userLoginVo).sucess();
     }
 
     @RequestMapping(value = "/info",method = RequestMethod.GET)
     @ResponseBody
-    @ApiOperation("获取用户信息")
+    @ApiOperation("获取用户基础信息")
     public CommonResponse InfoUser(@RequestParam("token") String Token){
         //1.判断token是否存在
         String jsonObj =  (String) redisService.get(Token);
@@ -167,6 +172,7 @@ public class UsersController {
         Users user = new Users();
         user.setUserName(userSignRequest.getUsername());
         user.setUserPassword(userSignRequest.getUserpwd());
+        user.setUserPhone(userSignRequest.getUserPhone());
         user.setUserRole("SubUser");
         user.setUserMail(userSignRequest.getUseremail());
         user.setUserAvatar("https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif");
@@ -181,6 +187,7 @@ public class UsersController {
         String fileUrl = fileService.uploadFile(userSignRequest.getLicense());
         supermarkets.setSupermarkLicense(fileUrl);
         supermarkets.setSupermarkRegionid(userSignRequest.getSaddress_areaId());
+        supermarkets.setCreateBy(user.getUserId()); //为用户添加创建人
         supermarketsService.saveOrUpdate(supermarkets);
         //6.将请求信息发送邮箱给对应公司邮箱进行验证注册
         Companies company = companiesService.getById(userSignRequest.getCompanyId());
@@ -222,7 +229,7 @@ public class UsersController {
             method = RequestMethod.GET,
             produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
-    @ApiOperation("用户注册验证")
+    @ApiOperation("用户注册验证(通过)")
     @Transactional
     public String AuthorSignOk(@PathVariable String userInfoId){
         //1.查看用户注册id是否存在
@@ -253,7 +260,7 @@ public class UsersController {
             produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     @Transactional
-    @ApiOperation("用户注册验证")
+    @ApiOperation("用户注册验证（未通过）")
     public String AuthorSignDeny(@PathVariable String userInfoId){
         //1.查看用户注册id是否存在
         JSONObject userinfo = JSONObject.parseObject((String) redisService.hGet("usersign", userInfoId));
@@ -276,41 +283,37 @@ public class UsersController {
         return String.format(MailTemplate.FINAL_CHECK,"已拒绝注册申请");
     }
 
-    @RequestMapping(value = "/authorize",method = RequestMethod.POST)
+    @RequestMapping(value = "/message",method = RequestMethod.GET)
     @ResponseBody
-    @ApiOperation("用户授权")
-    public String AuthorUser(@RequestParam("/token") @ApiParam("用户token") String token,
-                             @RequestParam("username") @ApiParam("授权用户名") String username,
-                             @RequestParam("password") @ApiParam("授权用户密码") String password,
-                             @RequestParam("supermarkid") @ApiParam("超市id") Integer supermarkid,
-                             @RequestParam("toauthor") @ApiParam("授权/取消授权") boolean toauth){
-        JSONObject res = new JSONObject();
-        res.put("status",200);
-        Object author = redisService.get(token);
-        if(author == null){
-            res.put("status",403);
-            res.put("msg","用户未授权或者长时间未操作需重新登录");
-            return JSONObject.toJSONString(res);
+    @ApiOperation("获取用户详细信息")
+    public CommonResponse MessageUser(@RequestParam("token") String token){
+        Users users = TokenToUsers(token);
+        if(token == null){
+            return new CommonResponse().error(403,"用户token异常");
         }
-        QueryWrapper<Users> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_name",username);
-        queryWrapper.eq("user_password",Md5Utils.md5(password));
-        Users user = usersService.getOne(queryWrapper);
-        if(user == null){
-            res.put("staus",404);
-            res.put("msg","用户不存在或密码错误");
-            return JSONObject.toJSONString(user);
+        Supermarkets supermarkets = supermarketsService.getByUserId(users.getUserId());
+        Companies companies = companiesService.getById(supermarkets.getSupermarkBelonged());
+        return new CommonResponse(new UserMessageVo(users,supermarkets,companies)).sucess();
+    }
+
+    @RequestMapping(value = "/updatepassword",method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation("更新用户密码信息")
+    public CommonResponse UpdateUserPassword(@RequestBody UserUpdatePasswordRequest updatePasswordRequest){
+        String token = updatePasswordRequest.getToken();
+        String password = updatePasswordRequest.getPassword();
+        //1.验证用户token
+        Users user = TokenToUsers(token);
+        if(token == null){
+            return new CommonResponse().error(403,"用户token异常");
         }
-        if(toauth) {authorizationService.saveOrUpdate(new Authorization(user.getUserId(), supermarkid));
-        res.put("msg","授权用户"+username+"操作"+supermarkid+"权限");}
-        else {
-            QueryWrapper<Authorization> wrapper = new QueryWrapper<>();
-            wrapper.eq("user_id",user.getUserId());
-            wrapper.eq("supermark_id",supermarkid);
-            authorizationService.remove(wrapper);
-            res.put("msg","取消授权用户"+username+"操作"+supermarkid+"权限");
-        }
-        return JSONObject.toJSONString(res);
+        //2.修改用户信息
+        user.setUserPassword(password);
+        //3.数据库更新数据
+        usersService.saveOrUpdate(user);
+        //4.redis更新用户信息
+        redisService.set(token,JSON.toJSONString(user),60*60*24);
+        return new CommonResponse().sucess();
     }
 
 

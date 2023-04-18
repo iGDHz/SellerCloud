@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hz.sellcloud.mapper.ChartDataMapper">
+    <select id="getChartData" resultType="com.hz.sellcloud.domain.vo.chart.ChartDataVo">
+        select CONCAT(s.supermark_name,'/',c.category_name,'/',product_name) as name
+        <if test="scope == 0">
+            ,date
+        </if>
+        <if test="scope == 1">
+            ,YEARWEEK(STR_TO_DATE(date,'%Y/%m/%d')) as date
+        </if>
+        <if test="scope == 2">
+            ,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y/%m') as date
+        </if>
+        <if test="scope == 3">
+            ,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y/%m') as date
+        </if>
+        <if test="scope == 4">
+            ,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y/%m') as date
+        </if>
+        <if test="scope == 5">
+            ,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y') as date
+        </if>
+        <if test="resultType == 0">
+            ,SUM(product_sales) as sales from product_sales p,supermarkets s, category c
+        </if>
+        <if test="resultType == 1">
+            ,SUM(product_count) as sales from product_sum p,supermarkets s,category c
+        </if>
+        <where>
+            and p.product_category = c.category_id
+            and p.product_supermarket = s.supermark_id
+            <if test="categorys != null and categorys.size() > 0">
+                and product_category in
+                <foreach collection="categorys" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="supermarkets != null and supermarkets.size() > 0">
+                and product_supermarket in
+                <foreach collection="supermarkets" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="products != null and products.size() > 0">
+                and product_name in
+                <foreach collection="products" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scope == 0">
+                and date between DATE_SUB(NOW(),INTERVAL 7 DAY) and NOW() group by name,date
+            </if>
+            <if test="scope == 1">
+                and date between DATE_SUB(NOW(),INTERVAL 1 MONTH) and NOW() group by name,YEARWEEK(STR_TO_DATE(date,'%Y/%m/%d'))
+            </if>
+            <if test="scope == 2">
+                and date between DATE_SUB(NOW(),INTERVAL 3 MONTH) and NOW() group by name,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y/%m')
+            </if>
+            <if test="scope == 3">
+                and date between DATE_SUB(NOW(),INTERVAL 6 MONTH) and NOW() group by name,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y/%m')
+            </if>
+            <if test="scope == 4">
+                and date between DATE_SUB(NOW(),INTERVAL 1 YEAR) and NOW() group by name,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y/%m')
+            </if>
+            <if test="scope == 5">
+                and date between DATE_SUB(NOW(),INTERVAL 3 YEAR) and NOW() group by name,DATE_FORMAT(STR_TO_DATE(date,'%Y/%m/%d'),'%Y')
+            </if>
+        </where>
+        
+    </select>
+    <select id="getChartSum" resultType="java.math.BigDecimal">
+        select SUM(product_count) from product_sum p,supermarkets s, category c
+        <where>
+            and p.product_category = c.category_id
+            and p.product_supermarket = s.supermark_id
+            <if test="categorys != null and categorys.size() > 0">
+                and product_category in
+                <foreach collection="categorys" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="supermarkets != null and supermarkets.size() > 0">
+                and product_supermarket in
+                <foreach collection="supermarkets" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="products != null and products.size() > 0">
+                and product_name in
+                <foreach collection="products" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scope == 0">
+                and date between DATE_SUB(NOW(),INTERVAL 7 DAY) and NOW()
+            </if>
+            <if test="scope == 1">
+                and date between DATE_SUB(NOW(),INTERVAL 1 MONTH) and NOW()
+            </if>
+            <if test="scope == 2">
+                and date between DATE_SUB(NOW(),INTERVAL 3 MONTH) and NOW()
+            </if>
+            <if test="scope == 3">
+                and date between DATE_SUB(NOW(),INTERVAL 6 MONTH) and NOW()
+            </if>
+            <if test="scope == 4">
+                and date between DATE_SUB(NOW(),INTERVAL 1 YEAR) and NOW()
+            </if>
+            <if test="scope == 5">
+                and date between DATE_SUB(NOW(),INTERVAL 3 YEAR) and NOW()
+            </if>
+        </where>
+
+    </select>
+    <select id="getChartSales" resultType="java.math.BigDecimal">
+        select SUM(product_sales) from product_sales p,supermarkets s, category c
+        <where>
+            and p.product_category = c.category_id
+            and p.product_supermarket = s.supermark_id
+            <if test="categorys != null and categorys.size() > 0">
+                and product_category in
+                <foreach collection="categorys" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="supermarkets != null and supermarkets.size() > 0">
+                and product_supermarket in
+                <foreach collection="supermarkets" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="products != null and products.size() > 0">
+                and product_name in
+                <foreach collection="products" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scope == 0">
+                and date between DATE_SUB(NOW(),INTERVAL 7 DAY) and NOW()
+            </if>
+            <if test="scope == 1">
+                and date between DATE_SUB(NOW(),INTERVAL 1 MONTH) and NOW()
+            </if>
+            <if test="scope == 2">
+                and date between DATE_SUB(NOW(),INTERVAL 3 MONTH) and NOW()
+            </if>
+            <if test="scope == 3">
+                and date between DATE_SUB(NOW(),INTERVAL 6 MONTH) and NOW()
+            </if>
+            <if test="scope == 4">
+                and date between DATE_SUB(NOW(),INTERVAL 1 YEAR) and NOW()
+            </if>
+            <if test="scope == 5">
+                and date between DATE_SUB(NOW(),INTERVAL 3 YEAR) and NOW()
+            </if>
+        </where>
+
+    </select>
+    <select id="updateSum" >
+        INSERT INTO product_sum (product_id, date, product_category, product_supermarket, product_name, product_count)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.product_id}, DATE_FORMAT(NOW(),'%Y/%m/%d'), #{item.category_id}, #{item.supermarket.sid}, #{item.name}, #{item.quantity})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        product_category = VALUES(product_category),
+        product_supermarket = VALUES(product_supermarket),
+        product_name = VALUES(product_name),
+        product_count = product_count + VALUES(product_count);
+    </select>
+    <select id="updateSales">
+        INSERT INTO product_sales (product_id, date, product_category, product_supermarket, product_name, product_sales)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.product_id}, DATE_FORMAT(NOW(),'%Y/%m/%d'), #{item.category_id}, #{item.supermarket.sid}, #{item.name}, #{item.price})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        product_category = VALUES(product_category),
+        product_supermarket = VALUES(product_supermarket),
+        product_name = VALUES(product_name),
+        product_sales = product_sales + VALUES(product_sales);
+    </select>
+</mapper>

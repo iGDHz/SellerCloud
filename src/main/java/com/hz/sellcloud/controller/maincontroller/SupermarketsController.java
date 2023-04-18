@@ -2,24 +2,37 @@ package com.hz.sellcloud.controller.maincontroller;
 
 
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hz.sellcloud.controller.BaseController;
+import com.hz.sellcloud.domain.request.products.ProductListRequest;
+import com.hz.sellcloud.domain.request.supermarket.SupermarketUpdateLiceseRequest;
+import com.hz.sellcloud.domain.request.user.UserSignRequest;
+import com.hz.sellcloud.domain.response.CommonResponse;
+import com.hz.sellcloud.domain.vo.supermarket.SupermarketVo;
 import com.hz.sellcloud.entity.Address;
+import com.hz.sellcloud.entity.Companies;
 import com.hz.sellcloud.entity.Supermarkets;
 import com.hz.sellcloud.entity.Users;
+import com.hz.sellcloud.service.*;
 import com.hz.sellcloud.service.impl.AddressServiceImpl;
+import com.hz.sellcloud.service.impl.CompaniesServiceImpl;
 import com.hz.sellcloud.service.impl.SupermarketsServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -30,112 +43,76 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @since 2022-10-27
  */
 @Controller
-@Api("超市信息管理")
-@RequestMapping("/supermarkets")
+@Api(tags = "超市信息管理")
+@RequestMapping("/supermarket")
 public class SupermarketsController extends BaseController {
 
     @Autowired
-    SupermarketsServiceImpl supermarketsService;
+    ISupermarketsService supermarketsService;
+
 
     @Autowired
-    AddressServiceImpl addressService;
-    
-    @RequestMapping(value = "/sign",method = RequestMethod.POST)
-    @ApiOperation("商店信息注册")
+    ICompaniesService companiesService;
+
+    @Autowired
+    IAddressService addressService;
+
+    @Autowired
+    FileService fileService;
+
+    @RequestMapping(value = "/updateLicense",method = RequestMethod.POST)
     @ResponseBody
-    public String SignCompany(@RequestParam("sname") @ApiParam("商店名称") String sname,
-                              @RequestParam("addressid") @ApiParam("地址信息") String addressid ,
-                              @RequestParam("companyid") @ApiParam("所属超市id") Integer cid,
-                              @RequestParam("token") @ApiParam("用户token") String token){
-        JSONObject res = new JSONObject();
-//        res.put("status",200);
-//        Users user = redisService.getUser(token);
-//        if(user == null){
-//            res.put("status",403);
-//            res.put("msg","请先登录");
-//            return res.toJSONString();
-//        }
-//        Address address = addressService.getAddress(addressid);
-//        if(address == null){
-//            res.put("status",403);
-//            res.put("msg","地址信息异常");
-//        }
-//        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
-//                .eq("supermark_name",sname));
-//        if(StringUtils.isEmpty(sname) || supermarket != null){
-//            res.put("status",403);
-//            res.put("msg","超市已经由其他用户注册或超市名为空");
-//            return res.toJSONString();
-//        }
-//        supermarket = new Supermarkets();
-//        supermarket.setSupermarkName(sname);
-//        supermarket.setSupermarkRegionid(addressid);
-//        supermarket.setsupermarkBelonged(cid);
-//        supermarketsService.saveOrUpdate(supermarket);
-//        res.put("msg","注册成功，请耐心等待审核通过");
-        return res.toJSONString();
+    @ApiOperation("更新用户超市信息")
+    public CommonResponse UpdateUser(HttpServletRequest httprequest){
+        MultipartHttpServletRequest request = (MultipartHttpServletRequest) httprequest;
+        String token = request.getParameter("token");
+        MultipartFile license = request.getFile("license");
+        //1.验证用户token
+        Users user = TokenToUsers(token);
+        if(token == null){
+            return new CommonResponse().error(403,"用户token异常");
+        }
+        //2.修改用户信息
+        Supermarkets supermarket = supermarketsService.getByUserId(user.getUserId());
+        String supermarkLicense = supermarket.getSupermarkLicense();
+        fileService.removeFile(supermarkLicense);
+        supermarket.setSupermarkLicense(fileService.uploadFile(license));
+        //3.数据库更新数据
+        supermarketsService.saveOrUpdate(supermarket);
+        //4.redis更新用户信息
+        redisService.set(token, JSON.toJSONString(user),60*60*24);
+        return new CommonResponse().sucess();
     }
 
-    @RequestMapping(value = "/update",method = RequestMethod.POST)
-    @ApiOperation("超市信息修改")
     @ResponseBody
-    public String UpdateCompany(@RequestParam("sid") @ApiParam("商店id") Integer sid,
-                                @RequestParam("sname") @ApiParam("商店名称") String sname,
-                                @RequestParam("addressid") @ApiParam("地址信息") String addressid ,
-                                @RequestParam("companyid") @ApiParam("所属超市id") Integer cid,
-                                @RequestParam("token") @ApiParam("用户token") String token){
-        JSONObject res = new JSONObject();
-//        res.put("status",200);
-//        Users user = redisService.getUser(token);
-//        if(user == null){
-//            res.put("status",403);
-//            res.put("msg","请先登录");
-//            return res.toJSONString();
-//        }
-//        Address address = addressService.getAddress(addressid);
-//        if(address == null){
-//            res.put("status",403);
-//            res.put("msg","地址信息异常");
-//        }
-//        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
-//                .eq("supermark_name",sname).ne("supermark_id",sid));
-//        if(StringUtils.isEmpty(sname) || supermarket != null){
-//            res.put("status",403);
-//            res.put("msg","超市已经由其他用户注册或超市名为空");
-//            return res.toJSONString();
-//        }
-//        supermarket.setSupermarkId(sid);
-//        supermarket.setSupermarkName(sname);
-//        supermarket.setSupermarkRegionid(addressid);
-//        supermarket.setsupermarkBelonged(cid);
-//        supermarketsService.saveOrUpdate(supermarket);
-//        res.put("msg","注册成功，请耐心等待审核通过");
-        return res.toJSONString();
-    }
-
-    @RequestMapping(value = "/delete",method = RequestMethod.POST)
-    @ApiOperation("超市信息删除")
-    @ResponseBody
-    public String DeleteCompany(@RequestParam("cname") @ApiParam("超市id") int sid,
-                                @RequestParam("cid") @ApiParam("公司id") int cid,
-                                @RequestParam("token") @ApiParam("用户token") String token){
-        JSONObject res = new JSONObject();
-        res.put("status",200);
-        Users user = redisService.getUser(token);
+    @ApiOperation("获取超市信息")
+    @RequestMapping(value = "/list",method = RequestMethod.GET)
+    public CommonResponse searchProducts(@RequestParam("token") String token){
+        Users user = TokenToUsers(token);
         if(user == null){
-            res.put("status",403);
-            res.put("msg","请先登录");
-            return res.toJSONString();
+            return new CommonResponse<>().error(403,"token失效");
         }
-        Supermarkets supermarket = supermarketsService.getOne(new QueryWrapper<Supermarkets>()
-                .eq("supermark_id",sid).eq("supermark_belonged",cid));
-        if(supermarket == null){
-            res.put("status",403);
-            res.put("status","超市不存在");
-            return res.toJSONString();
+        List<Supermarkets> list;
+        if(user.getUserRole().equals("Admin")){
+            Companies companies = companiesService.getByUserId(user.getUserId());
+            list = supermarketsService.searchByCompanyId(companies.getCompanyId());
+        }else{
+            list = supermarketsService.searchByUserId(user.getUserId());
         }
-        supermarketsService.removeById(supermarket);
-        res.put("msg","修改成功，请耐心等待审核通过");
-        return res.toJSONString();
+        List<SupermarketVo> voList = list.parallelStream().map(this::MapToVo).collect(Collectors.toList());
+        return new CommonResponse(voList).sucess();
+    }
+
+    public SupermarketVo MapToVo(Supermarkets supermarkets){
+        SupermarketVo vo = new SupermarketVo();
+        vo.setId(supermarkets.getSupermarkId());
+        vo.setName(supermarkets.getSupermarkName());
+        String license = "http://localhost:8082/file/down" + supermarkets.getSupermarkLicense();
+        license = license.replace("\\", "/");
+        vo.setLicense(license);
+        vo.setAddress_areaId(supermarkets.getSupermarkRegionid());
+        vo.setAddress_detail(supermarkets.getSupermarkDetail());
+        vo.setCompany_id(supermarkets.getSupermarkBelonged());
+        return vo;
     }
 }

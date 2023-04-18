@@ -29,6 +29,9 @@ public class Users implements Serializable {
     @ApiModelProperty("用户名")
     private String userName;
 
+    @ApiModelProperty("手机号码")
+    private String userPhone;
+
     @ApiModelProperty("用户密码")
     private String userPassword;
 
@@ -54,7 +57,7 @@ public class Users implements Serializable {
     private Date updateTime;
 
     @TableField(exist = false)
-    private String createBy;
+    private Integer createBy;
     public Users() {
     }
 
@@ -75,6 +78,13 @@ public class Users implements Serializable {
         this.userAvatar = userAvatar;
     }
 
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
 
     public String getUserMail() {
         return userMail;

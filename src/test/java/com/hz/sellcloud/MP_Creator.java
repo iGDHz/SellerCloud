@@ -16,7 +16,7 @@ public class MP_Creator {
                     builder.author("hz") // 设置作者
                             .enableSwagger() // 开启 swagger 模式
                             .fileOverride() // 覆盖已生成文件
-                            .outputDir("D:\\Hz_Java\\sellcloud\\src\\main\\java"); // 指定输出目录
+                            .outputDir("D:\\Hz_Java\\sellcloud\\template"); // 指定输出目录
                 })
                 .packageConfig(builder -> {
                     builder.parent("com.hz.sellcloud") // 设置父包名

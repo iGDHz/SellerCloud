@@ -1,0 +1,142 @@
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+
+  #文件操作配置
+  servlet:
+    multipart:
+      max-file-size: 10MB #限制当个文件上传最大为10MB
+      max-request-size: 100MB #限制总文件大小为100MB
+
+  #邮箱操作配置
+  mail:
+    host: smtp.163.com #邮箱
+    port: 587
+    username: #邮箱地址
+    password: #邮箱密钥
+    default-encoding: UTF-8
+      #其他参数
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.socketFactory.port: 465
+      mail.smtp.socketFactory.class: javax.net.ssl.SSLSocketFactory
+      mail.smtp.socketFactory.fallback: false
+
+  profiles:
+    active: dev
+
+  #数据源配置
+  datasource:
+    username: #数据库
+    password: #数据库密码
+    url: jdbc:mysql://localhost:3306/sellercloud?userUnicode=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+      #Spring Boot 默认是不注入这些属性值的，需要自己绑定
+    #druid 数据源专有配置
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+      #配置监控统计拦截的filters，stat:监控统计、log4j：日志记录、wall：防御sql注入
+      #如果允许时报错  java.lang.ClassNotFoundException: org.apache.log4j.Priority
+    #则导入 log4j 依赖即可，Maven 地址：https://mvnrepository.com/artifact/log4j/log4j
+    filters: stat,wall,log4j
+    maxPoolPreparedStatementPerConnectionSize: 20
+    useGlobalDataSourceStat: true
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  devtools:
+    restart:
+      enabled: true  #设置开启热部署
+      additional-paths: src/main/java #重启目录
+      exclude: WEB-INF/**
+
+redisManagement:
+  dbnum: 2
+  redis1:
+    database: 1
+    host: localhost
+    password:
+    port: 6379
+    timeout: 0
+  redis2:
+    database: 2
+    host: localhost
+    password:
+    port: 6379
+    timeout: 0
+
+
+
+redis:
+  database: 0
+  host: localhost         # Redis服务器地址
+  port: 6379              # Redis服务器连接端口
+  password:               # Redis服务器连接密码（默认为空）
+  pool:
+    max-active: 200       # 连接池最大连接数（使用负值表示没有限制）
+    max-idle: 10          # 连接池中的最大空闲连接
+    max-wait: -1          # 连接池最大阻塞等待时间（使用负值表示没有限制）
+    min-idle: 0           # 连接池中的最小空闲连接
+  timeout: 1000           # 连接超时时间（毫秒）
+
+
+
+
+  web:
+    resources:
+      static-locations: classpath:templates
+#整合mybatis
+mybatis-plus:
+  type-aliases-package: com.hz.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    cache-enabled: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+server:
+  port: 8082
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /sellcloud
+#  ssl:
+#    key-store: keystore.p12
+#    key-store-password: 123456
+#    key-store-type: PKCS12
+#    key-alias: tomcat
+#    enabled: true
+
+sellcloud:
+  file:
+    path: D:\Hz_Java\sellcloud\file
+  domain: localhost
+
+#日志配置 无特殊需求无需更改
+logging:
+  config:  classpath:log4j2.xml
+  level:
+    root: INFO
+    javax.activation: info
+    org.apache.catalina: INFO
+    org.apache.commons.beanutils.converters: INFO
+    org.apache.coyote.http11.Http11Processor: INFO
+    org.apache.http: INFO
+    org.apache.tomcat: INFO
+    org.springframework: INFO
+    com.chinamobile.cmss.bdpaas.resource.monitor: DEBUG

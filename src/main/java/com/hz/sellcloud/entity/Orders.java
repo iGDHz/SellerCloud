@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -24,7 +25,10 @@ public class Orders implements Serializable {
 
     @ApiModelProperty("订单id")
     @TableId(type = IdType.AUTO)
-    private Integer orderId;
+    private Integer Id;
+
+    @ApiModelProperty("订单号")
+    private String orderId;
 
     @ApiModelProperty("商品id")
     private Integer productId;
@@ -39,26 +43,34 @@ public class Orders implements Serializable {
     private BigDecimal price;
 
     @ApiModelProperty("付款时间")
-    private Date date;
+    private Date createTime;
 
     public Orders(){
 
     }
 
-    public Orders(Integer productId, Integer total, BigDecimal originPrice, BigDecimal price,Date date) {
+    public Orders(Integer productId, Integer total, BigDecimal originPrice, BigDecimal price,Date createTime) {
         this.productId = productId;
         this.total = total;
         this.originPrice = originPrice;
         this.price = price;
-        this.date = date;
+        this.createTime = createTime;
     }
 
 
-    public Integer getOrderId() {
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Integer orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
     public Integer getProductId() {

@@ -58,7 +58,7 @@ public class RedisInitalizer {
         RedisServiceImpl[] rediss = new RedisServiceImpl[maxnum];
         for (int i = 0; i < maxnum; i++) {
             String pre = "redisManagement.redis"+(i+1)+".";
-            StringRedisTemplate template = redisTemplateObject(i,environment.getProperty(pre+"host"),environment.getProperty(pre+"password"),
+            StringRedisTemplate template = redisTemplateObject(Integer.parseInt(environment.getProperty(pre+"database")),environment.getProperty(pre+"host"),environment.getProperty(pre+"password"),
                     environment.getProperty(pre+"port",Integer.class));
             rediss[i] = new RedisServiceImpl(template);
         }
@@ -124,7 +124,8 @@ public class RedisInitalizer {
      */
     private void setSerializer(StringRedisTemplate template) {
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());//设置Json序列化
+
     }
 
 }

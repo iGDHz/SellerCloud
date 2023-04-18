@@ -1,5 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.hz.sellcloud.mapper.OrdersMapper">
-
+    <select id="listByCondition" resultType="com.hz.sellcloud.entity.OrderSum" >
+        select order_id,order_price,supermarket_id,create_time from order_sum
+        <where>
+            <if test="order_id != null and order_id != ''">
+                and order_id like CONCAT('%',#{order_id},'%')
+            </if>
+            <if test="low_price != null">
+                and order_price &gt;= #{low_price}
+            </if>
+            <if test="high_price != null">
+                and order_price &lt;= #{high_price}
+            </if>
+            <if test="fast_date != null">
+                and create_time &gt;= #{fast_date}
+            </if>
+            <if test="letast_date != null">
+                and create_time &lt;= #{letast_date}
+            </if>
+            <if test="list != null and list.size()>0">
+                AND supermarket_id IN
+                <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        limit #{page},#{pagesize}
+    </select>
+    <select id="listById" resultMap="order_map">
+        select o.product_id as product_id,
+               p.product_category as category_id,
+               p.product_name as name,
+               supermark_id as sid,
+               supermark_name as sname,
+               p.product_price as signle,
+               o.price as price,
+               p.product_picture as picture,
+               o.total as quantity
+        from orders o,products p,supermarkets s
+        <where>
+            <if test="order_id != null">
+                o.order_id = #{order_id}
+            </if>
+            and p.product_id=o.product_id and p.product_belonged = s.supermark_id
+        </where>
+    </select>
+    
+    <resultMap id="order_map" type="com.hz.sellcloud.domain.vo.order.OrderVo$productVo">
+        <constructor>
+            <arg column="product_id" javaType="int"/>
+            <arg column="category_id" javaType="int"/>
+            <arg column="name" javaType="String"/>
+            <arg column="sid" javaType="int"/>
+            <arg column="sname" javaType="String"/>
+            <arg column="signle" javaType="java.math.BigDecimal"/>
+            <arg column="price" javaType="java.math.BigDecimal"/>
+            <arg column="picture" javaType="String"/>
+            <arg column="quantity" javaType="int"/>
+        </constructor>
+    </resultMap>
 </mapper>

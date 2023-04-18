@@ -45,7 +45,6 @@ import java.util.Date;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -63,18 +62,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf()
-                .disable()
-                .userDetailsService(new SellUsersDeatilService(usersService))
-                .authorizeRequests()
-                .antMatchers("/users/authorize/**").hasRole("0")
-//                .antMatchers("/admin/**").hasRole("1")
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()
-//                .failureHandler(new SellAuthenticationFailureHandler())
-                .successHandler(new SellAuthenticationSuccessHandler(usersService,redisService))
-                .and()
-                .httpBasic();
+                .disable();
+//                .userDetailsService(new SellUsersDeatilService(usersService))
+//                .authorizeRequests()
+//                .antMatchers("/users/authorize/**").hasRole("0")
+////                .antMatchers("/admin/**").hasRole("1")
+//                .anyRequest().authenticated()
+//                .and()
+//                .formLogin()
+////                .failureHandler(new SellAuthenticationFailureHandler())
+//                .successHandler(new SellAuthenticationSuccessHandler(usersService,redisService))
+//                .and()
+//                .httpBasic();
     }
 
     @Override
@@ -103,18 +102,19 @@ class SellUsersDeatilService implements UserDetailsService{
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        SecurityContext context = SecurityContextHolder.getContext();
-        QueryWrapper<Users> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_name",username);
-        Users user = usersService.getOne(queryWrapper);
-        List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(String.valueOf(user.getUserLevel()));
-        if(user == null) {
-            user = new Users();
-            user.setUserName("admin");
-            user.setUserPassword("errorpassword");
-            authorities = AuthorityUtils.createAuthorityList(user.getUserLevel().toString());
-        }
-        return new User(user.getUserName(),new BCryptPasswordEncoder().encode(user.getUserPassword()),authorities);
+//        SecurityContext context = SecurityContextHolder.getContext();
+//        QueryWrapper<Users> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("user_name",username);
+//        Users user = usersService.getOne(queryWrapper);
+//        List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(String.valueOf(user.getUserLevel()));
+//        if(user == null) {
+//            user = new Users();
+//            user.setUserName("admin");
+//            user.setUserPassword("errorpassword");
+//            authorities = AuthorityUtils.createAuthorityList(user.getUserLevel().toString());
+//        }
+//        return new User(user.getUserName(),new BCryptPasswordEncoder().encode(user.getUserPassword()),authorities);
+        return null;
     }
 }
 

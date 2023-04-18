@@ -6,7 +6,10 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.hadoop.shaded.javax.ws.rs.GET;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,14 +34,37 @@ public class FileController {
     @Autowired
     FileService fileService;
 
-    @RequestMapping(value = "/download/{year}/{month}/{fileuuid}",method = RequestMethod.GET)
+    @RequestMapping(value = "/download/{year}/{month}/{filename}",method = RequestMethod.GET)
     @ApiModelProperty("获取文件")
-    public void downloadFile(@RequestParam("year") String year,
-                             @RequestParam("month") String month,
-                             @RequestParam("fileuuid") String filename,
+    public void downloadFile(@PathVariable String year,
+                             @PathVariable String month,
+                             @PathVariable String filename,
                              HttpServletResponse response) throws IOException {
         fileService.downloadFile(year,month,filename,response);
     }
+
+    @RequestMapping(value = "/picture/{year}/{month}/{filename}",method = RequestMethod.GET)
+    @ApiModelProperty("获取图片")
+    public void downloadPicture(@PathVariable String year,
+                             @PathVariable String month,
+                             @PathVariable String filename,
+                             HttpServletResponse response) throws IOException {
+        String extension = StringUtils.getFilenameExtension(filename);
+        String contentType;
+        switch (extension.toLowerCase()) {
+            case "png":
+                contentType = MediaType.IMAGE_PNG_VALUE;
+                break;
+            case "jpeg":
+            case "jpg":
+                contentType = MediaType.IMAGE_JPEG_VALUE;
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported image format: " + extension);
+        }
+        fileService.downloadFile(year,month,filename,response,contentType);
+    }
+
 
     @RequestMapping(value = "/upload",method = RequestMethod.POST)
     @ApiModelProperty("上传文件")

@@ -64,6 +64,18 @@ public class CompaniesServiceImpl extends ServiceImpl<CompaniesMapper, Companies
 
 
     /*
+        @params : id 用户id
+        @description： 根据用户id返回公司信息
+        @return: 公司信息
+     */
+    @Override
+    public Companies getByUserId(int userId) {
+        QueryWrapper<Companies> queryWrapper = new QueryWrapper<Companies>().eq("company_user", userId);
+        return getOne(queryWrapper);
+    }
+
+
+    /*
             @params: Companies companies DTO层的company
             @descrip： 将DTO结构转化为VO结构
             @return: CompanyVo VO结构
